@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+data/processed/
+wandb/
+*.pt
+*.bin
+.hf_cache/
+.DS_Store
