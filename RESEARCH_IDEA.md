@@ -11,6 +11,21 @@ Can Karpathy’s AutoResearch loop discover reproducible, linguistically meaning
 
 Drop your audio + exact IPA transcripts into the repo, launch the loop overnight, and wake up to a clean git history containing **only validated improvements** on your targeted Phoneme Error Rate (PER).
 
+### Input Requirements (Non-Negotiable)
+
+**This project is an optimization harness, not a transcription pipeline.** It requires you to bring your own audio paired with **accurate, human-verified IPA transcriptions**. The entire research claim — that the loop surfaces linguistically meaningful improvements on dialect-specific patterns — depends on the ground truth actually reflecting the dialect.
+
+You must supply:
+- `data/raw/*.wav` — audio clips.
+- `data/raw/*.ipa.txt` — one space-separated IPA phoneme sequence per line, human-transcribed or human-corrected. Narrow transcription preferred when dialectal detail matters.
+
+What this project **will not** do for you:
+- **Generate IPA from audio.** Use a pretrained phoneme recognizer (`facebook/wav2vec2-xlsr-53-espeak-cv-ft`, `facebook/wav2vec2-lv-60-espeak-cv-ft`, Allosaurus, CharsiuG2P) as a first pass, then have a phonetician correct the output before feeding it here.
+- **Convert orthographic transcripts to dialect-accurate IPA.** A `phonemizer`/eSpeak convenience path exists (see step 2 below) and is acceptable *only* for standard-dialect read speech. For dialect, clinical, or L2 research — the intended use case — it will flatten exactly the features you're trying to measure and render targeted PER meaningless.
+- **Pseudo-label with another model.** The loop would then optimize toward that teacher's biases rather than phonetic ground truth.
+
+If you do not already have accurate IPA transcriptions (or cannot produce them via auto-label + human correction), this repo is not the right tool yet — annotate first, then return.
+
 ### Features
 - Native Wav2Vec2ForCTC + custom IPA tokenizer (perfect for phoneme-level work)
 - Targeted PER + weighted PER (articulatory feature distance)
@@ -67,8 +82,9 @@ ipa-phonetic-autoresearch/
    ```bash
    python prepare.py --ipa_pattern "r" --language "en-scottish" --aligner mfa   # or phonemizer
    ```
-   - Converts orthographic transcripts → IPA if needed.  
-   - Builds custom tokenizer vocab from your IPA symbols only.  
+   - Assumes `data/raw/*.ipa.txt` already contains accurate, human-verified IPA (see **Input Requirements** above).
+   - `--aligner phonemizer` is a convenience for standard-dialect read speech only; **do not use it for dialect/clinical/L2 research** — it emits citation-dialect IPA and will silently invalidate the metric.
+   - Builds custom tokenizer vocab from your IPA symbols only.
    - Creates fixed validation set rich in the target pattern.
 
 3. **Choose Loop Variant** (set in program.md)  
